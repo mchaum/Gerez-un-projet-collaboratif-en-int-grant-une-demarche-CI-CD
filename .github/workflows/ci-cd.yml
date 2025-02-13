@@ -1,0 +1,81 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Tests & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer Java 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Installer Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Installer les dépendances du back
+        run: |
+          cd back
+          mvn clean install
+
+      - name: Lancer les tests du back
+        run: |
+          cd back
+          mvn test
+
+      - name: Générer le rapport de couverture
+        run: |
+          cd back
+          mvn jacoco:report
+
+      - name: Installer les dépendances du front
+        run: |
+          cd front
+          npm install
+
+      - name: Lancer les tests du front
+        run: |
+          cd front
+          npm test -- --watch=false --browsers=ChromeHeadless
+
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Connexion à Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build et push du back-end
+        run: |
+          cd back
+          docker build -t mchaum/back-app:latest .
+          docker push mchaum/back-app:latest
+
+      - name: Build et push du front-end
+        run: |
+          cd front
+          docker build -t mchaum/front-app:latest .
+          docker push mchaum/front-app:latest

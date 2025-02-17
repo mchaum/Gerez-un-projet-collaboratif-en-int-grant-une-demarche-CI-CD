@@ -68,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: karma-coverage
-          path: front/coverage/**/coverage-final.json
+          path: front/coverage/lcov-report/coverage-final.json # Vérifie que ce fichier existe réellement
 
       - name: Ajouter le rapport de couverture JaCoCo dans la PR
         uses: madrapps/jacoco-report@v1.7.1
@@ -86,5 +86,5 @@ jobs:
           name: Test Coverage
           path: |
             back/target/site/jacoco/jacoco.xml
-            front/coverage/**/coverage-final.json  # Vérifier que ce fichier existe
-          reporter: jest-junit  
+            front/coverage/lcov-report/coverage-final.json  # Vérifie que ce fichier existe
+          reporter: jest-junit

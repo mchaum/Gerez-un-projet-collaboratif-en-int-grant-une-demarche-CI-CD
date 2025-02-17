@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -22,11 +21,18 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build Docker image
+      - name: Build back Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/bobapp:${{ github.sha }} .
-
-      - name: Push Docker image to Docker Hub
+          docker build -f back/Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/bobapp-back:${{ github.sha }} back/
+        
+      - name: Push back Docker image
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/bobapp:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/bobapp-back:${{ github.sha }}
 
+      - name: Build front Docker image
+        run: |
+          docker build -f front/Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/bobapp-front:${{ github.sha }} front/
+        
+      - name: Push front Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/bobapp-front:${{ github.sha }}

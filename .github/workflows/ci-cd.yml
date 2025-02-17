@@ -77,3 +77,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarcloud-action@v1
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          sonar-host-url: http://localhost:9001
+
+      - name: SonarQube Analysis (si pas de fichier sonar-project.properties)
+        run: |
+          curl -u $SONAR_TOKEN: -X POST "http://localhost:9001/api/qualityprofiles/search?projectKey=Bobapp"
+          sonar-scanner \
+          -Dsonar.projectKey=Bobapp \
+          -Dsonar.sources=./back,./front \
+          -Dsonar.host.url=http://localhost:9001 \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}

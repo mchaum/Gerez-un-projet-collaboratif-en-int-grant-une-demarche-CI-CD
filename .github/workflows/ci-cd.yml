@@ -1,81 +1,78 @@
-name: CI/CD Pipeline
-
+name: CI/CD 
 on:
   pull_request:
-    branches:
-      - main
+    paths-ignore: ['**.md']
   push:
+    paths-ignore: ['**.md']
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  checks: write
 
 jobs:
-  test:
-    name: Tests & Build
+  build-test:
+    name: Build & Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Installer Java 11
+      - name: Installer Java 11 (Back)
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Installer Node.js 18
+      - name: Installer Node.js 18 (Front)
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Installer les dépendances du back
+      - name: Installer les dépendances du Back
         run: |
           cd back
           mvn clean install
 
-      - name: Lancer les tests du back
+      - name: Lancer les tests du Back avec couverture
         run: |
           cd back
           mvn test
-
-      - name: Générer le rapport de couverture
-        run: |
-          cd back
           mvn jacoco:report
 
-      - name: Installer les dépendances du front
+      - name: Installer les dépendances du Front
         run: |
           cd front
           npm install
 
-      - name: Lancer les tests du front
+      - name: Lancer les tests du Front avec couverture
         run: |
           cd front
-          npm test -- --watch=false --browsers=ChromeHeadless
+          npm test -- --code-coverage --watch=false --browsers=ChromeHeadless
 
-  build-and-push:
-    name: Build & Push Docker Images
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      - name: Connexion à Docker Hub
-        uses: docker/login-action@v3
+      - name: Upload Jacoco Report (Back)
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          name: jacoco-report
+          path: back/target/site/jacoco/jacoco.xml
 
-      - name: Build et push du back-end
-        run: |
-          cd back
-          docker build -t mchaum/back-app:latest .
-          docker push mchaum/back-app:latest
+      - name: Upload Karma Coverage Report (Front)
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: karma-coverage
+          path: front/coverage/coverage.xml
 
-      - name: Build et push du front-end
-        run: |
-          cd front
-          docker build -t mchaum/front-app:latest .
-          docker push mchaum/front-app:latest
+      - name: Test Report
+        uses: phoenix-actions/test-reporting@v8
+        id: test-report
+        if: success() || failure()
+        with:
+          name: Test Coverage
+          path: |
+            back/target/site/jacoco/jacoco.xml
+            front/coverage/coverage.xml
+          reporter: jacoco

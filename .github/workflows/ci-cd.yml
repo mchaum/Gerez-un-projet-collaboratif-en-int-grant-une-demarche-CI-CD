@@ -80,11 +80,6 @@ jobs:
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@v4.1.0
-        with:
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
-          sonar-project-key: 'mchaum_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD'
-          sonar-project-name: 'mchaum_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD'
-          sonar-host-url: 'https://sonarcloud.io'
-          organization: 'mchaum'
-          sonar.sources: './back,./front'
-          sonar.java.binaries: './back/target/classes'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        

@@ -52,6 +52,10 @@ jobs:
           cd front
           npm test -- --code-coverage --watch=false --browsers=ChromeHeadless
 
+      - name: Vérifier la couverture du Front
+        run: |
+          ls -R front/coverage
+
       - name: Upload Jacoco Report (Back)
         if: success() || failure()
         uses: actions/upload-artifact@v4
@@ -64,9 +68,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: karma-coverage
-          path: front/coverage/coverage.xml
+          path: front/coverage/**/coverage-final.json 
 
-      - name: Test Report
+      - name: Ajouter le rapport de couverture JaCoCo dans la PR
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: back/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+
+      - name: Générer un rapport combiné des tests
         uses: phoenix-actions/test-reporting@v8
         id: test-report
         if: success() || failure()
@@ -74,5 +86,5 @@ jobs:
           name: Test Coverage
           path: |
             back/target/site/jacoco/jacoco.xml
-            front/coverage/coverage.xml
+            front/coverage/**/coverage-final.json
           reporter: jacoco

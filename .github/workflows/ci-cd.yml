@@ -77,14 +77,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
-
-      - name: Générer un rapport combiné des tests
-        uses: phoenix-actions/test-reporting@v8
-        id: test-report
-        if: success() || failure()
-        with:
-          name: Test Coverage
-          path: |
-            back/target/site/jacoco/jacoco.xml
-            front/coverage/bobapp/coverage.json 
-          reporter: jest-junit

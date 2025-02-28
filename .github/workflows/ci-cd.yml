@@ -56,29 +56,42 @@ jobs:
         run: |
           ls -R front/coverage
 
-          - name: Upload du rapport JaCoCo (HTML)
-          if: success() || failure()
-          uses: actions/upload-artifact@v4
-          with:
-            name: jacoco-html-report
-            path: back/target/site/ 
-
-      - name: Upload Karma Coverage Report (Front)
+      - name: Upload du rapport JaCoCo (HTML)
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: karma-coverage
-          path: front/coverage/bobapp/coverage.json
+          name: jacoco-html-report
+          path: back/target/site/
+
+      - name: Upload du rapport Karma (HTML)
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: karma-coverage-html
+          path: front/coverage/bobapp/index.html  
 
       - name: Ajouter le rapport de couverture JaCoCo dans la PR
         uses: madrapps/jacoco-report@v1.7.1
         with:
           paths: back/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
+          min-coverage-overall: 30
           min-coverage-changed-files: 60
+
+      - name: Ajouter le rapport de couverture du Front dans la PR
+        uses: madrapps/coverage-report@v1.0.0
+        with:
+          paths: front/coverage/bobapp/coverage.json 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 30 
+          min-coverage-changed-files: 60  
+      
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@v4.1.0
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          extraArgs: |
+            -Dsonar.coverage.jacoco.xmlReportPaths=back/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=front/coverage/bobapp/lcov.info

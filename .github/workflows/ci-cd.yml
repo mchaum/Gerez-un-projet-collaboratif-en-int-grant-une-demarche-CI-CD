@@ -2,10 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ] 
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [ "main" ] 
   workflow_dispatch:
 
 jobs:
@@ -14,16 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout du code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Installer Java 11 (Back)
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4.4.0
         with:
           distribution: 'temurin'
           java-version: '11'
 
       - name: Installer Node.js 18 (Front)
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 

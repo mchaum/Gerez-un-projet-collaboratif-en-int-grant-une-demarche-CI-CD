@@ -74,7 +74,7 @@ jobs:
           min-coverage-changed-files: 60
       
       - name: SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@v4.1.0
+        uses: sonarsource/sonarqube-scan-action@v3.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
